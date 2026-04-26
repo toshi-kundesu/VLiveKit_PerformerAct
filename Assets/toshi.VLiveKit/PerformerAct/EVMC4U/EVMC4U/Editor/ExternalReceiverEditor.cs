@@ -24,6 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+#if false
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -51,3 +53,4 @@ namespace EVMC4U
         }
     }
 }
+#endif
