@@ -1,0 +1,215 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2424687009250563748
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300321250484004612}
+  - component: {fileID: 2094280022114194149}
+  - component: {fileID: 6416936216610776287}
+  - component: {fileID: 533232007663699676}
+  - component: {fileID: 4240966110728221165}
+  m_Layer: 0
+  m_Name: AutoAnimation_Tda
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300321250484004612
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2424687009250563748}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2094280022114194149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2424687009250563748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cef2b65e0d540e245ac5fbbb414055ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rightEye: {fileID: 0}
+  leftEye: {fileID: 0}
+  cameraTransform: {fileID: 0}
+  minAngle: {x: -2.5, y: 0, z: -2.5}
+  maxAngle: {x: 2.5, y: 0, z: 2.5}
+  IntensityMultiplier: 0.5
+  minTime: 1
+  maxTime: 2
+  cameraLookProbability: 0.5
+  autoSwitchState: 0
+  lookAtCamera: 0
+  invertLookAt: 0
+  lookAtOffset: {x: 90, y: 0, z: 0}
+  rightEyeOffset: {x: -90, y: 90, z: 90}
+  leftEyeOffset: {x: -90, y: 90, z: 90}
+  defaultViewOffset: {x: -90, y: 90, z: 90}
+  timer: 0
+  elapsedTime: 0
+--- !u!114 &6416936216610776287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2424687009250563748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2dbf6841337b22499322f67589b3162, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ref_SMR_EYE_DEF: {fileID: 0}
+  blendShapeName: "\u307E\u3070\u305F\u304D"
+  minBlinkDuration: 0.1
+  maxBlinkDuration: 1
+  minBlinkPause: 1
+  maxBlinkPause: 3
+  blinkCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.22500001
+      value: 0.978334
+      inSlope: 0.0014135784
+      outSlope: 0.0014135784
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.4360007
+      value: 0.94525063
+      inSlope: -0.5550987
+      outSlope: -0.5550987
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.76371264
+    - serializedVersion: 3
+      time: 0.6500496
+      value: 0.15298586
+      inSlope: -0.9171688
+      outSlope: -0.9171688
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.22718903
+    - serializedVersion: 3
+      time: 1
+      value: 0.00094264746
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 0
+    m_RotationOrder: 4
+  initialBlinkWeight: 25
+--- !u!114 &533232007663699676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2424687009250563748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f73187caae1c65d4a918271127d3af90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bones:
+  - bone: {fileID: 0}
+    angleAmplitudeX: 4.4
+    angleAmplitudeY: 3.5
+    angleAmplitudeZ: 0
+    phaseOffset: 0
+    defaultRotation: {x: 0, y: 0, z: 0, w: 0}
+  - bone: {fileID: 0}
+    angleAmplitudeX: 4.4
+    angleAmplitudeY: 1
+    angleAmplitudeZ: 0
+    phaseOffset: 0.229
+    defaultRotation: {x: 0, y: 0, z: 0, w: 0}
+  - bone: {fileID: 0}
+    angleAmplitudeX: 5
+    angleAmplitudeY: 1
+    angleAmplitudeZ: 0
+    phaseOffset: 0.7
+    defaultRotation: {x: 0, y: 0, z: 0, w: 0}
+  - bone: {fileID: 0}
+    angleAmplitudeX: 4.91
+    angleAmplitudeY: 0
+    angleAmplitudeZ: 1
+    phaseOffset: 0.7
+    defaultRotation: {x: 0, y: 0, z: 0, w: 0}
+  faceMesh: {fileID: 0}
+  blendShapes:
+  - shapeName: "\u3042"
+    amplitude: 30
+    phaseOffset: 0.7
+    shapeIndex: 0
+  - shapeName: "\u3046"
+    amplitude: 30
+    phaseOffset: 1
+    shapeIndex: 0
+  - shapeName: "\u4E0A"
+    amplitude: 30
+    phaseOffset: 0.7
+    shapeIndex: 0
+  frequency: 1
+--- !u!114 &4240966110728221165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2424687009250563748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c82cfbed094b0e841852abc4fb134dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skinnedMeshRenderer: {fileID: 0}
+  blendShapeSets:
+  - controllerBlendShapeName: "\u307E\u3070\u305F\u304D"
+    targetBlendShapeName: "\u4E0B"
+    followRatio: 0.656
+    noiseStrength: 0.461
+    noiseSpeed: 0.9
+    noiseSyncNum: 0
+  - controllerBlendShapeName: "\u307E\u3070\u305F\u304D"
+    targetBlendShapeName: "\u56F0\u308B"
+    followRatio: 0.118
+    noiseStrength: 0.461
+    noiseSpeed: 0.9
+    noiseSyncNum: 0
