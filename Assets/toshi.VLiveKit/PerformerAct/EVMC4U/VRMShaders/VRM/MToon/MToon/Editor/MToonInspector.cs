@@ -8,13 +8,6 @@ namespace MToon
 {
     public class MToonInspector : ShaderGUI
     {
-        // facesphereintensity
-        private MaterialProperty _faceSphereIntensity;
-        private MaterialProperty _isFace;
-        private MaterialProperty _testFloat;
-        private MaterialProperty _testTexture;
-        // レンブラントライティング用
-        private MaterialProperty _rembrandLightingMask;
         private const float RoundsToDegree = 360f;
         private const float RoundsToRadian = (float) Math.PI * 2f;
 
@@ -64,11 +57,6 @@ namespace MToon
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            _isFace = FindProperty(Utils.PropIsFace, properties);
-            _faceSphereIntensity = FindProperty(Utils.PropFaceSphereIntensity, properties);
-            _testFloat = FindProperty(Utils.PropTestFloat, properties);
-            _testTexture = FindProperty(Utils.PropTestTexture, properties);
-            _rembrandLightingMask = FindProperty(Utils.PropRembrandLightingMask, properties);
             _version = FindProperty(Utils.PropVersion, properties);
             _debugMode = FindProperty(Utils.PropDebugMode, properties);
             _outlineWidthMode = FindProperty(Utils.PropOutlineWidthMode, properties);
@@ -116,20 +104,6 @@ namespace MToon
         {
             EditorGUI.BeginChangeCheck();
             {
-                bool isFaceBool = _isFace.floatValue > 0.5f;          // 0/1 → bool
-                isFaceBool = EditorGUILayout.Toggle("Is Face", isFaceBool);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    materialEditor.RegisterPropertyChangeUndo("IsFaceToggle");
-                    _isFace.floatValue = isFaceBool ? 1f : 0f;        // bool → 0/1
-                }
-                // face sphere intensity
-                materialEditor.ShaderProperty(_faceSphereIntensity, "Face Sphere Intensity");
-                // rim texture
-                materialEditor.ShaderProperty(_testFloat, "Test Float");
-                materialEditor.TexturePropertySingleLine(new GUIContent("Test Texture", "Test Texture"), _testTexture);
-                // rembrand lighting mask
-                materialEditor.TexturePropertySingleLine(new GUIContent("Rembrandt Lighting Mask", "Rembrandt Lighting Mask"), _rembrandLightingMask);
                 _version.floatValue = Utils.VersionNumber;
                 
                 EditorGUILayout.LabelField("Rendering", EditorStyles.boldLabel);
@@ -236,11 +210,6 @@ namespace MToon
                                 _shadingGradeRate);
                             materialEditor.ShaderProperty(_lightColorAttenuation, "LightColor Attenuation");
                             materialEditor.ShaderProperty(_indirectLightIntensity, "GI Intensity");
-
-                            // ⭐ 追加ここ！
-        materialEditor.TexturePropertySingleLine(
-            new GUIContent("Rembrandt Lighting Mask", "レンブラントライティング用マスク (R)"),
-            _rembrandLightingMask);
                         }
                     }
                     EditorGUI.indentLevel--;

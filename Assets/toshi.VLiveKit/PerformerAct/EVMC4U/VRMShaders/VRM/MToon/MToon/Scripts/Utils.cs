@@ -6,12 +6,6 @@ namespace MToon
 {
     public static partial class Utils
     {
-        public const string PropIsFace = "_IsFace";
-        public const string PropFaceSphereIntensity = "_FaceSphereIntensity";
-        public const string PropTestFloat = "_TestFloat";
-        public const string PropTestTexture = "_TestTexture";
-        public const string PropRembrandLightingMask = "_RembrandLightingMask";
-
         public const string ShaderName = "VRM/MToon";
 
         public const string PropVersion = "_MToonVersion";
@@ -76,7 +70,7 @@ namespace MToon
 
         public const int DisabledIntValue = 0;
         public const int EnabledIntValue = 1;
-
+        
         public static RenderQueueRequirement GetRenderQueueRequirement(RenderMode renderMode)
         {
             const int shaderDefaultQueue = -1;
