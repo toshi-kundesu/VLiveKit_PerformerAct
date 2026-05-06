@@ -10,7 +10,7 @@ namespace OscJack
 {
     class OscMonitorWindow : EditorWindow
     {
-        [MenuItem("Window/OSC Monitor")]
+    [MenuItem("Window/OSC Monitor")]
         public static void ShowWindow()
         {
             EditorWindow.GetWindow<OscMonitorWindow>("OSC Monitor");
