@@ -1,6 +1,6 @@
 {
   "name": "com.toshi.vlivekit.performeract",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "displayName": "VLive Performer Act",
   "description": "Performer act for virtual live production.",
   "unity": "2022.3",
