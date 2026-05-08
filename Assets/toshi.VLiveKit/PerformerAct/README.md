@@ -5,8 +5,8 @@
 ## Package
 
 - Package name: `com.toshi.vlivekit.performeract`
-- Version: `0.0.5`
-- Unity: 2022.3
+- Version: `0.1.3`
+- Unity: 6000.3
 - Repository: https://github.com/toshi-kundesu/VLiveKit_PerformerAct
 - Package root: `Assets/toshi.VLiveKit/PerformerAct`
 

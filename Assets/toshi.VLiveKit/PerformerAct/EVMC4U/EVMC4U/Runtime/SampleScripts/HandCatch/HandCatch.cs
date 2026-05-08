@@ -237,7 +237,7 @@ namespace EVMC4U
                         rigid.isKinematic = leftCatchedObjectIsKinematic;
 
                         //投げるために速度を転送する
-                        rigid.velocity = leftLastSpeed;
+                        rigid.linearVelocity = leftLastSpeed;
                     }
 
                     //フィルタ解除
@@ -317,9 +317,9 @@ namespace EVMC4U
                         //IsKinematicを保存していた設定にする
                         rigid.isKinematic = rightCatchedObjectIsKinematic;
 
-                        Debug.Log(rightRigidBody.velocity);
+                        Debug.Log(rightRigidBody.linearVelocity);
                         //投げるために速度を転送する
-                        rigid.velocity = rightLastSpeed;
+                        rigid.linearVelocity = rightLastSpeed;
                     }
 
                     //フィルタ解除
