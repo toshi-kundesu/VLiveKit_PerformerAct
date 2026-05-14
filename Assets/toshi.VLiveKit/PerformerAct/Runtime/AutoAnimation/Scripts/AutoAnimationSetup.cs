@@ -20,10 +20,12 @@ public sealed class AutoAnimationSetup : MonoBehaviour
     [SerializeField] private bool setupEyeDart = true;
     [SerializeField] private bool setupBreathing = true;
     [SerializeField] private bool setupMotionJitter = true;
+    [SerializeField] private bool setupFacialJitter = true;
     [SerializeField] private AutoBlink autoBlink;
     [SerializeField] private AutoEyeDirt eyeDart;
     [SerializeField] private BreathingAnimation breathingAnimation;
     [SerializeField] private MultiBoneOffsetController motionJitter;
+    [SerializeField] private BlendShapeFollower facialJitter;
 
     [Header("Facial Control")]
     [SerializeField] private bool setupFacialControls = true;
@@ -100,6 +102,11 @@ public sealed class AutoAnimationSetup : MonoBehaviour
         if (setupBreathing)
         {
             SetupBreathing(host, animator);
+        }
+
+        if (setupFacialJitter)
+        {
+            SetupFacialJitter(host);
         }
 
         if (animator != null && setupMotionJitter)
@@ -196,6 +203,23 @@ public sealed class AutoAnimationSetup : MonoBehaviour
     {
         motionJitter = EnsureComponent(host, motionJitter);
         SeedDefaultMotionJitter(motionJitter, false);
+    }
+
+    private void SetupFacialJitter(GameObject host)
+    {
+        if (faceRenderer == null)
+        {
+            return;
+        }
+
+        facialJitter = EnsureComponent(host, facialJitter);
+        if (facialJitter == null)
+        {
+            return;
+        }
+
+        var defaultSets = CreateDefaultFacialJitterSets(faceRenderer);
+        facialJitter.Configure(faceRenderer, defaultSets, replaceExisting:false);
     }
 
     private void SetupFacialControls(GameObject host)
@@ -484,6 +508,78 @@ public sealed class AutoAnimationSetup : MonoBehaviour
             offsetAmplitude = offsetAmplitude,
             offsetSpeed = offsetSpeed,
             phaseOffset = phaseOffset
+        });
+    }
+
+    private static List<BlendShapeFollower.BlendShapeSet> CreateDefaultFacialJitterSets(SkinnedMeshRenderer renderer)
+    {
+        var sets = new List<BlendShapeFollower.BlendShapeSet>();
+        if (renderer == null || renderer.sharedMesh == null)
+        {
+            return sets;
+        }
+
+        var blinkShapeName = FindBlinkBlendShapeName(renderer);
+        if (string.IsNullOrEmpty(blinkShapeName))
+        {
+            return sets;
+        }
+
+        AddFacialJitterSetIfFound(
+            sets,
+            renderer,
+            blinkShapeName,
+            0.65f,
+            0.45f,
+            0.9f,
+            0,
+            "下",
+            "EyeDown",
+            "LookDown",
+            "Lower",
+            "lower");
+
+        AddFacialJitterSetIfFound(
+            sets,
+            renderer,
+            blinkShapeName,
+            0.12f,
+            0.45f,
+            0.9f,
+            1,
+            "困る",
+            "Troubled",
+            "Sorrow",
+            "Sad",
+            "sad");
+
+        return sets;
+    }
+
+    private static void AddFacialJitterSetIfFound(
+        List<BlendShapeFollower.BlendShapeSet> sets,
+        SkinnedMeshRenderer renderer,
+        string controllerBlendShapeName,
+        float followRatio,
+        float noiseStrength,
+        float noiseSpeed,
+        int noiseSyncNum,
+        params string[] targetCandidates)
+    {
+        var targetBlendShapeName = FindBlendShapeName(renderer, targetCandidates);
+        if (string.IsNullOrEmpty(targetBlendShapeName) || targetBlendShapeName == controllerBlendShapeName)
+        {
+            return;
+        }
+
+        sets.Add(new BlendShapeFollower.BlendShapeSet
+        {
+            controllerBlendShapeName = controllerBlendShapeName,
+            targetBlendShapeName = targetBlendShapeName,
+            followRatio = followRatio,
+            noiseStrength = noiseStrength,
+            noiseSpeed = noiseSpeed,
+            noiseSyncNum = noiseSyncNum
         });
     }
 

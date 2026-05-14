@@ -22,6 +22,37 @@ public class BlendShapeFollower : MonoBehaviour
     private Dictionary<string, int> blendShapeIndexCache = new Dictionary<string, int>();
     private Dictionary<int, float> noiseOffsets = new Dictionary<int, float>();
 
+    public bool HasBlendShapeSets => blendShapeSets.Count > 0;
+
+    public void Configure(SkinnedMeshRenderer renderer, List<BlendShapeSet> sets, bool replaceExisting)
+    {
+        skinnedMeshRenderer = renderer;
+
+        if (replaceExisting)
+        {
+            blendShapeSets.Clear();
+        }
+
+        if (sets != null)
+        {
+            foreach (var set in sets)
+            {
+                if (set == null || string.IsNullOrEmpty(set.controllerBlendShapeName) || string.IsNullOrEmpty(set.targetBlendShapeName))
+                {
+                    continue;
+                }
+
+                if (!ContainsBlendShapeSet(set.controllerBlendShapeName, set.targetBlendShapeName))
+                {
+                    blendShapeSets.Add(set);
+                }
+            }
+        }
+
+        InitializeBlendShapeIndices();
+        InitializeNoiseOffsets();
+    }
+
     void Start()
     {
         InitializeBlendShapeIndices();
@@ -43,6 +74,11 @@ public class BlendShapeFollower : MonoBehaviour
 
     void CacheBlendShapeIndex(string blendShapeName)
     {
+        if (string.IsNullOrEmpty(blendShapeName) || skinnedMeshRenderer == null || skinnedMeshRenderer.sharedMesh == null)
+        {
+            return;
+        }
+
         if (!blendShapeIndexCache.ContainsKey(blendShapeName))
         {
             int index = skinnedMeshRenderer.sharedMesh.GetBlendShapeIndex(blendShapeName);
@@ -73,12 +109,33 @@ public class BlendShapeFollower : MonoBehaviour
 
     void UpdateBlendShapes()
     {
-        if (skinnedMeshRenderer == null) return;
+        if (skinnedMeshRenderer == null || skinnedMeshRenderer.sharedMesh == null) return;
 
         foreach (var set in blendShapeSets)
         {
-            int controllerIndex = blendShapeIndexCache[set.controllerBlendShapeName];
-            int targetIndex = blendShapeIndexCache[set.targetBlendShapeName];
+            if (set == null || string.IsNullOrEmpty(set.controllerBlendShapeName) || string.IsNullOrEmpty(set.targetBlendShapeName))
+            {
+                continue;
+            }
+
+            var controllerIndex = -1;
+            if (!blendShapeIndexCache.TryGetValue(set.controllerBlendShapeName, out controllerIndex))
+            {
+                CacheBlendShapeIndex(set.controllerBlendShapeName);
+                blendShapeIndexCache.TryGetValue(set.controllerBlendShapeName, out controllerIndex);
+            }
+
+            var targetIndex = -1;
+            if (!blendShapeIndexCache.TryGetValue(set.targetBlendShapeName, out targetIndex))
+            {
+                CacheBlendShapeIndex(set.targetBlendShapeName);
+                blendShapeIndexCache.TryGetValue(set.targetBlendShapeName, out targetIndex);
+            }
+
+            if (!noiseOffsets.ContainsKey(set.noiseSyncNum))
+            {
+                noiseOffsets[set.noiseSyncNum] = UnityEngine.Random.value * 1000f;
+            }
 
             if (controllerIndex != -1 && targetIndex != -1)
             {
@@ -95,5 +152,20 @@ public class BlendShapeFollower : MonoBehaviour
     {
         InitializeBlendShapeIndices();
         InitializeNoiseOffsets();
+    }
+
+    private bool ContainsBlendShapeSet(string controllerBlendShapeName, string targetBlendShapeName)
+    {
+        foreach (var set in blendShapeSets)
+        {
+            if (set != null &&
+                set.controllerBlendShapeName == controllerBlendShapeName &&
+                set.targetBlendShapeName == targetBlendShapeName)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

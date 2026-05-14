@@ -25,6 +25,7 @@ For the normal character-root workflow, add `AutoAnimationSetup` to the avatar r
 - `AutoBlink` for automatic blinking.
 - `AutoEyeDirt` for eye dart and camera-look motion.
 - `BreathingAnimation` with a small default Humanoid breathing preset.
+- `BlendShapeFollower` for subtle facial BlendShape jitter driven by blink shapes.
 - `MultiBoneOffsetController` with a subtle head/neck/shoulder motion-jitter preset.
 - `JoyStickReceiver` and `ExpressionController` for controller/OSC facial expression control.
 - `FacialReceiver` and `FacialBlendShapeController` for uLipSync-style OSC lip sync.
