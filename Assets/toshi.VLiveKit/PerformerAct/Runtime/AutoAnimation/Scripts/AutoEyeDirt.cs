@@ -48,6 +48,14 @@ public class AutoEyeDirt : MonoBehaviour
     [Tooltip("Right専用（sameOffsetBothEyes=OFF時のみ有効）")]
     public Vector3 cameraLookOffsetEulerRight = Vector3.zero;
 
+    [Header("カメラ目線の安定化")]
+    [Tooltip("左右の目に同じカメラ方向を使い、近距離カメラで寄り目になりすぎるのを抑えます。")]
+    public bool useSharedCameraLookDirection = true;
+    [Range(0f, 1f)]
+    public float cameraLookIntensity = 0.7f;
+    [Range(0f, 80f)]
+    public float maxCameraLookAngle = 18f;
+
     /* ───────────── 内部変数 ───────────── */
     private Animator  animator;
     private Transform leftEye;
@@ -57,6 +65,8 @@ public class AutoEyeDirt : MonoBehaviour
     [Header("📌 Debug: 取得した“正面”ローカル回転(Inspector 表示用)")]
     [SerializeField] private Quaternion defaultLeftLocalRot  = Quaternion.identity;
     [SerializeField] private Quaternion defaultRightLocalRot = Quaternion.identity;
+    [SerializeField] private Vector3 defaultLeftGazeLocalDir = Vector3.forward;
+    [SerializeField] private Vector3 defaultRightGazeLocalDir = Vector3.forward;
 
     private float      timer;
     private int        dartCount;
@@ -89,6 +99,27 @@ public class AutoEyeDirt : MonoBehaviour
     private void CaptureDefaultEyeLocalRotations_Context() => CaptureDefaultEyeLocalRotations();
 #endif
 
+    public void SetTargetCamera(Transform cameraTransform, bool recaptureDefaultGaze = true)
+    {
+        targetCamera = cameraTransform;
+
+        if (!recaptureDefaultGaze)
+        {
+            return;
+        }
+
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+
+        ResolveBones(verbose:false);
+        if (leftEye != null && rightEye != null)
+        {
+            CaptureDefaultEyeLocalRotations();
+        }
+    }
+
     /* ──────────────────────────────────── */
     void LateUpdate()
     {
@@ -99,12 +130,18 @@ public class AutoEyeDirt : MonoBehaviour
         {
             if (targetCamera == null) return;
 
-            var lookL = Quaternion.LookRotation((targetCamera.position - leftEye.position).normalized, leftEye.up);
-            var lookR = Quaternion.LookRotation((targetCamera.position - rightEye.position).normalized, rightEye.up);
-
-            // ★ カメラ目線専用オフセット適用
-            lookL = ApplyCameraLookOffset(lookL, isRight:false);
-            lookR = ApplyCameraLookOffset(lookR, isRight:true);
+            var lookL = BuildCameraLookRotation(
+                leftEye,
+                defaultLeftLocalRot,
+                defaultLeftGazeLocalDir,
+                GetCameraLookDirection(leftEye),
+                isRight:false);
+            var lookR = BuildCameraLookRotation(
+                rightEye,
+                defaultRightLocalRot,
+                defaultRightGazeLocalDir,
+                GetCameraLookDirection(rightEye),
+                isRight:true);
 
             leftEye.rotation  = lookL;
             rightEye.rotation = lookR;
@@ -139,12 +176,18 @@ public class AutoEyeDirt : MonoBehaviour
         if (useCameraLookThisTime)
         {
             // ── 100% カメラ目線（左右独立） ──
-            var lookL = Quaternion.LookRotation((targetCamera.position - leftEye.position).normalized, leftEye.up);
-            var lookR = Quaternion.LookRotation((targetCamera.position - rightEye.position).normalized, rightEye.up);
-
-            // ★ カメラ目線専用オフセット適用
-            lookL = ApplyCameraLookOffset(lookL, isRight:false);
-            lookR = ApplyCameraLookOffset(lookR, isRight:true);
+            var lookL = BuildCameraLookRotation(
+                leftEye,
+                defaultLeftLocalRot,
+                defaultLeftGazeLocalDir,
+                GetCameraLookDirection(leftEye),
+                isRight:false);
+            var lookR = BuildCameraLookRotation(
+                rightEye,
+                defaultRightLocalRot,
+                defaultRightGazeLocalDir,
+                GetCameraLookDirection(rightEye),
+                isRight:true);
 
             leftEye.rotation  = lookL;
             rightEye.rotation = lookR;
@@ -157,18 +200,24 @@ public class AutoEyeDirt : MonoBehaviour
 
             if (enableCameraLook)
             {
-                baseL = Quaternion.LookRotation((targetCamera.position - leftEye.position).normalized, leftEye.up);
-                baseR = Quaternion.LookRotation((targetCamera.position - rightEye.position).normalized, rightEye.up);
-
-                // ★ カメラ目線“基準”にも専用オフセットを足す（その上でランダムをEyeLocalで加算）
-                baseL = ApplyCameraLookOffset(baseL, isRight:false);
-                baseR = ApplyCameraLookOffset(baseR, isRight:true);
+                baseL = BuildCameraLookRotation(
+                    leftEye,
+                    defaultLeftLocalRot,
+                    defaultLeftGazeLocalDir,
+                    GetCameraLookDirection(leftEye),
+                    isRight:false);
+                baseR = BuildCameraLookRotation(
+                    rightEye,
+                    defaultRightLocalRot,
+                    defaultRightGazeLocalDir,
+                    GetCameraLookDirection(rightEye),
+                    isRight:true);
             }
             else
             {
                 // 親ワールド回転 × 初期ローカル（左右別）
-                baseL = leftEye.parent.rotation  * defaultLeftLocalRot;
-                baseR = rightEye.parent.rotation * defaultRightLocalRot;
+                baseL = GetBaseEyeWorldRotation(leftEye, defaultLeftLocalRot);
+                baseR = GetBaseEyeWorldRotation(rightEye, defaultRightLocalRot);
             }
 
             var dartQ = Quaternion.Euler(randomOffsetEuler); // EyeLocal基準
@@ -185,8 +234,65 @@ public class AutoEyeDirt : MonoBehaviour
     /* ───────────── ユーティリティ ───────────── */
     private void CaptureDefaultEyeLocalRotations()
     {
-        if (leftEye  != null) defaultLeftLocalRot  = leftEye.localRotation;
-        if (rightEye != null) defaultRightLocalRot = rightEye.localRotation;
+        var defaultGazeWorld = ResolveDefaultGazeWorldDirection();
+
+        if (leftEye != null)
+        {
+            defaultLeftLocalRot = leftEye.localRotation;
+            defaultLeftGazeLocalDir = WorldDirectionToEyeLocal(defaultGazeWorld, leftEye, defaultLeftLocalRot);
+        }
+
+        if (rightEye != null)
+        {
+            defaultRightLocalRot = rightEye.localRotation;
+            defaultRightGazeLocalDir = WorldDirectionToEyeLocal(defaultGazeWorld, rightEye, defaultRightLocalRot);
+        }
+    }
+
+    private Vector3 GetCameraLookDirection(Transform eye)
+    {
+        if (targetCamera == null)
+        {
+            return ResolveDefaultGazeWorldDirection();
+        }
+
+        if (useSharedCameraLookDirection && leftEye != null && rightEye != null)
+        {
+            var center = (leftEye.position + rightEye.position) * 0.5f;
+            return SafeNormalized(targetCamera.position - center, ResolveDefaultGazeWorldDirection());
+        }
+
+        if (eye != null)
+        {
+            return SafeNormalized(targetCamera.position - eye.position, ResolveDefaultGazeWorldDirection());
+        }
+
+        return SafeNormalized(targetCamera.position - transform.position, ResolveDefaultGazeWorldDirection());
+    }
+
+    private Quaternion BuildCameraLookRotation(
+        Transform eye,
+        Quaternion defaultLocalRotation,
+        Vector3 defaultGazeLocalDirection,
+        Vector3 lookDirection,
+        bool isRight)
+    {
+        var baseRotation = GetBaseEyeWorldRotation(eye, defaultLocalRotation);
+        var baseGazeDirection = SafeNormalized(baseRotation * SafeNormalized(defaultGazeLocalDirection, Vector3.forward), transform.forward);
+        var targetDirection = SafeNormalized(lookDirection, baseGazeDirection);
+
+        if (maxCameraLookAngle > 0f)
+        {
+            targetDirection = Vector3.RotateTowards(
+                baseGazeDirection,
+                targetDirection,
+                maxCameraLookAngle * Mathf.Deg2Rad,
+                0f);
+        }
+
+        var targetRotation = Quaternion.FromToRotation(baseGazeDirection, targetDirection) * baseRotation;
+        var blendedRotation = Quaternion.Slerp(baseRotation, targetRotation, Mathf.Clamp01(cameraLookIntensity));
+        return ApplyCameraLookOffset(blendedRotation, isRight);
     }
 
     private Quaternion ApplyCameraLookOffset(Quaternion lookRot, bool isRight)
@@ -202,6 +308,42 @@ public class AutoEyeDirt : MonoBehaviour
         // World: 先に世界回転で回してから視線（=q * look）
         // EyeLocal: 視線の後にローカルで回す（=look * q）
         return (cameraLookOffsetSpace == CameraOffsetSpace.World) ? (q * lookRot) : (lookRot * q);
+    }
+
+    private Vector3 ResolveDefaultGazeWorldDirection()
+    {
+        if (targetCamera != null && leftEye != null && rightEye != null)
+        {
+            var center = (leftEye.position + rightEye.position) * 0.5f;
+            var cameraDirection = targetCamera.position - center;
+            if (cameraDirection.sqrMagnitude > 0.0001f)
+            {
+                return cameraDirection.normalized;
+            }
+        }
+
+        return SafeNormalized(transform.forward, Vector3.forward);
+    }
+
+    private static Quaternion GetBaseEyeWorldRotation(Transform eye, Quaternion defaultLocalRotation)
+    {
+        if (eye == null)
+        {
+            return Quaternion.identity;
+        }
+
+        return eye.parent != null ? eye.parent.rotation * defaultLocalRotation : defaultLocalRotation;
+    }
+
+    private static Vector3 WorldDirectionToEyeLocal(Vector3 worldDirection, Transform eye, Quaternion defaultLocalRotation)
+    {
+        var baseRotation = GetBaseEyeWorldRotation(eye, defaultLocalRotation);
+        return SafeNormalized(Quaternion.Inverse(baseRotation) * SafeNormalized(worldDirection, Vector3.forward), Vector3.forward);
+    }
+
+    private static Vector3 SafeNormalized(Vector3 value, Vector3 fallback)
+    {
+        return value.sqrMagnitude > 0.0001f ? value.normalized : fallback.normalized;
     }
 
     private void ResolveBones(bool verbose)

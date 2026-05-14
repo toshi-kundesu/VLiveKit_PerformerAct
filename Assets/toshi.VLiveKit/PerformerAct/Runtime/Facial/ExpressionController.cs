@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using VRM;
 
+/// <summary>
+/// Drives avatar facial expressions from keyboard, D-pad, trigger, and joystick-style inputs.
+/// It can write through VRMBlendShapeProxy for VRM avatars or directly to a SkinnedMeshRenderer.
+/// </summary>
 public class ExpressionController : MonoBehaviour
 {
     [Header("Skinned Mesh Renderer")]
@@ -199,6 +203,7 @@ public class ExpressionController : MonoBehaviour
         float maxWeight = blendShapeMaxWeights.ContainsKey(index) ? blendShapeMaxWeights[index] : 100f;
         float endValue = (endValuePercentage / 100f) * maxWeight;
 
+        // BlendShapeKeyMapping stores normalized percentages; convert back to renderer/VRM weight units here.
         if (duration <= 0f)
         {
             SetBlendShapeWeight(index, endValue);

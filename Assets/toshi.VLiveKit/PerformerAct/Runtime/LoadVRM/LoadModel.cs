@@ -9,10 +9,8 @@ using UnityEngine;
 // animatorControllerを使用するために必要
 using System.IO;
 using System.Linq;
-using AnimatorController = UnityEditor.Animations.AnimatorController;
 
 using SFB;
-using UnityEditor;
 using UnityEngine.Timeline;
 using UnityEngine.Playables;
 using UnityEngine.Animations;
@@ -61,7 +59,7 @@ public class LoadModel : MonoBehaviour
     private AnimationClip animationClip;
 
     [SerializeField]
-    private AnimatorController animatorController;
+    private RuntimeAnimatorController animatorController;
 
     void Start()
     {
