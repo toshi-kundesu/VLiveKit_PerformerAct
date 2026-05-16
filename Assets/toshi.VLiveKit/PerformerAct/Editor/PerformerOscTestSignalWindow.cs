@@ -20,6 +20,8 @@ namespace VLiveKit.PerformerAct.Editor
         const string LipAddressU = "/ulipsync/vowel/u";
         const string LipAddressE = "/ulipsync/vowel/e";
         const string LipAddressO = "/ulipsync/vowel/o";
+        const int DefaultLipSyncPort = 39580;
+        const int DefaultExpressionPort = 39581;
 
         static readonly string[] ExpressionAddresses =
         {
@@ -29,8 +31,8 @@ namespace VLiveKit.PerformerAct.Editor
         };
 
         [SerializeField] string destinationAddress = "127.0.0.1";
-        [SerializeField] int lipSyncPort = global::PerformerOscPorts.LipSync;
-        [SerializeField] int expressionPort = global::PerformerOscPorts.Expression;
+        [SerializeField] int lipSyncPort = DefaultLipSyncPort;
+        [SerializeField] int expressionPort = DefaultExpressionPort;
         [SerializeField] bool sendLipSync = true;
         [SerializeField] bool sendExpression = true;
         [SerializeField] int rateFps = 30;
@@ -90,10 +92,10 @@ namespace VLiveKit.PerformerAct.Editor
         void UpgradeLegacyPorts()
         {
             if (lipSyncPort <= 0 || lipSyncPort == 3940 || lipSyncPort == 4000)
-                lipSyncPort = global::PerformerOscPorts.LipSync;
+                lipSyncPort = DefaultLipSyncPort;
 
             if (expressionPort <= 0 || expressionPort == 4000 || expressionPort == 9000)
-                expressionPort = global::PerformerOscPorts.Expression;
+                expressionPort = DefaultExpressionPort;
         }
 
         void OnGUI()
