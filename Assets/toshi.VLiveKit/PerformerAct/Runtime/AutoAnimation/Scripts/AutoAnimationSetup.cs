@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using WindForVRM;
 using VRM;
 
 [ExecuteAlways]
@@ -21,11 +22,13 @@ public sealed class AutoAnimationSetup : MonoBehaviour
     [SerializeField] private bool setupBreathing = true;
     [SerializeField] private bool setupMotionJitter = true;
     [SerializeField] private bool setupFacialJitter = true;
+    [SerializeField] private bool setupVrmWind = true;
     [SerializeField] private AutoBlink autoBlink;
     [SerializeField] private AutoEyeDirt eyeDart;
     [SerializeField] private BreathingAnimation breathingAnimation;
     [SerializeField] private MultiBoneOffsetController motionJitter;
     [SerializeField] private BlendShapeFollower facialJitter;
+    [SerializeField] private VRMWind vrmWind;
 
     [Header("Facial Control")]
     [SerializeField] private bool setupFacialControls = true;
@@ -66,6 +69,18 @@ public sealed class AutoAnimationSetup : MonoBehaviour
     [ContextMenu("Setup Auto Animation")]
     public void Setup()
     {
+        SetupInternal(rebuildGeneratedDefaults:false);
+    }
+
+    [ContextMenu("Resetup Auto Animation")]
+    public void Resetup()
+    {
+        RefreshDetectedReferences();
+        SetupInternal(rebuildGeneratedDefaults:true);
+    }
+
+    private void SetupInternal(bool rebuildGeneratedDefaults)
+    {
         var animator = ResolveAnimator();
         if (requireHumanoid && (animator == null || !animator.isHuman))
         {
@@ -101,17 +116,22 @@ public sealed class AutoAnimationSetup : MonoBehaviour
 
         if (setupBreathing)
         {
-            SetupBreathing(host, animator);
+            SetupBreathing(host, animator, rebuildGeneratedDefaults);
         }
 
         if (setupFacialJitter)
         {
-            SetupFacialJitter(host);
+            SetupFacialJitter(host, rebuildGeneratedDefaults);
         }
 
         if (animator != null && setupMotionJitter)
         {
-            SetupMotionJitter(host);
+            SetupMotionJitter(host, rebuildGeneratedDefaults);
+        }
+
+        if (setupVrmWind)
+        {
+            SetupVrmWind(host, rebuildGeneratedDefaults);
         }
 
         if (setupFacialControls)
@@ -128,6 +148,14 @@ public sealed class AutoAnimationSetup : MonoBehaviour
         {
             SetupFacialManager(host, animator);
         }
+    }
+
+    private void RefreshDetectedReferences()
+    {
+        characterAnimator = FindAnimator();
+        targetCamera = FindCamera();
+        blendShapeProxy = FindBlendShapeProxy();
+        faceRenderer = FindFaceRenderer();
     }
 
     [ContextMenu("Use Default Motion Preset")]
@@ -185,7 +213,7 @@ public sealed class AutoAnimationSetup : MonoBehaviour
         }
     }
 
-    private void SetupBreathing(GameObject host, Animator animator)
+    private void SetupBreathing(GameObject host, Animator animator, bool rebuildGeneratedDefaults)
     {
         breathingAnimation = EnsureComponent(host, breathingAnimation);
         if (breathingAnimation == null)
@@ -196,16 +224,16 @@ public sealed class AutoAnimationSetup : MonoBehaviour
         breathingAnimation.animator = animator;
         breathingAnimation.faceMesh = faceRenderer;
         breathingAnimation.vrmBlendShapeProxy = blendShapeProxy;
-        SeedDefaultBreathingBones(breathingAnimation, false);
+        SeedDefaultBreathingBones(breathingAnimation, rebuildGeneratedDefaults);
     }
 
-    private void SetupMotionJitter(GameObject host)
+    private void SetupMotionJitter(GameObject host, bool rebuildGeneratedDefaults)
     {
         motionJitter = EnsureComponent(host, motionJitter);
-        SeedDefaultMotionJitter(motionJitter, false);
+        SeedDefaultMotionJitter(motionJitter, rebuildGeneratedDefaults);
     }
 
-    private void SetupFacialJitter(GameObject host)
+    private void SetupFacialJitter(GameObject host, bool rebuildGeneratedDefaults)
     {
         if (faceRenderer == null)
         {
@@ -219,7 +247,25 @@ public sealed class AutoAnimationSetup : MonoBehaviour
         }
 
         var defaultSets = CreateDefaultFacialJitterSets(faceRenderer);
-        facialJitter.Configure(faceRenderer, defaultSets, replaceExisting:false);
+        facialJitter.Configure(faceRenderer, defaultSets, rebuildGeneratedDefaults);
+    }
+
+    private void SetupVrmWind(GameObject host, bool rebuildGeneratedDefaults)
+    {
+        vrmWind = EnsureComponent(host, vrmWind);
+        if (vrmWind == null)
+        {
+            return;
+        }
+
+        if (rebuildGeneratedDefaults)
+        {
+            vrmWind.ReloadVrm(host.transform);
+        }
+        else
+        {
+            vrmWind.LoadVrm(host.transform);
+        }
     }
 
     private void SetupFacialControls(GameObject host)

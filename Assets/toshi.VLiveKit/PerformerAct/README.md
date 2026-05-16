@@ -5,7 +5,7 @@ Performer control package for virtual live production. It bundles the VLiveKit-s
 ## Package
 
 - Package name: `com.toshi.vlivekit.performeract`
-- Version: `0.1.3`
+- Version: `0.1.6`
 - Unity: 6000.3
 - Repository: https://github.com/toshi-kundesu/VLiveKit_PerformerAct
 - Package root: `Assets/toshi.VLiveKit/PerformerAct`
@@ -27,11 +27,14 @@ For the normal character-root workflow, add `AutoAnimationSetup` to the avatar r
 - `BreathingAnimation` with a small default Humanoid breathing preset.
 - `BlendShapeFollower` for subtle facial BlendShape jitter driven by blink shapes.
 - `MultiBoneOffsetController` with a subtle head/neck/shoulder motion-jitter preset.
+- `VRMWind` for light wind variation on VRM SpringBones.
 - `JoyStickReceiver` and `ExpressionController` for controller/OSC facial expression control.
 - `FacialReceiver` and `FacialBlendShapeController` for uLipSync-style OSC lip sync.
 - `VRMFacialManager` so the shared Animator and BlendShapeProxy references stay connected.
 
 If the avatar is not Humanoid, turn off `Require Humanoid` before running the context menu `Setup Auto Animation`. Use `Use Default Motion Preset` when you want to restore only the generated breathing and motion-jitter presets without changing the facial mappings.
+
+Use `Resetup Auto Animation` when existing scene components were created by an older setup pass. It re-detects the Animator, camera, VRM BlendShapeProxy, and face renderer, then rebuilds generated breathing, motion-jitter, and facial-jitter defaults, reloads `VRMWind`, and keeps the component set in place.
 
 ## UPM Dependencies
 
@@ -61,7 +64,7 @@ Add the npm scoped registry to the project manifest before installing:
 
 - EVMC4U: https://github.com/gpsnmeajp/EVMC4U
 - UniVRM / VRMShaders 0.120.0, kept bundled for now because the currently visible registry packages do not match this embedded version.
-- WindForVRM: https://github.com/malaybaku/WindForVRM
+- WindForVRM runtime `VRMWind`: https://github.com/malaybaku/WindForVRM, Apache-2.0. See `ThirdPartyNotices/WindForVRM.md`.
 
 ## Install
 
