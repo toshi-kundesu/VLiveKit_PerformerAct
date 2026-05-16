@@ -1,16 +1,17 @@
-using UnityEngine;
 using OscJack;
+using UnityEngine;
 
 class FacialReceiver : MonoBehaviour
 {
-    // ip address
-    // public string ipAddress = "192.168.0.255";
-    [Range(0, 10000)]
-    public int port = 3940;
+    public const int DefaultPort = PerformerOscPorts.LipSync;
+
+    [Range(1, 65535)]
+    public int port = DefaultPort;
 
     OscServer _server;
-    
-    // 各母音の値を保持
+    int _boundPort;
+    bool _callbacksRegistered;
+
     [Range(0, 100)]
     public float valueA = 0f;
     [Range(0, 100)]
@@ -22,70 +23,90 @@ class FacialReceiver : MonoBehaviour
     [Range(0, 100)]
     public float valueO = 0f;
 
-    void Start()
+    void Reset()
     {
-        _server = new OscServer(port); // Port number
-
-        // 各母音のコールバックを登録
-        _server.MessageDispatcher.AddCallback(
-            "/ulipsync/vowel/a",
-            (string address, OscDataHandle data) => {
-                valueA = data.GetElementAsFloat(0);
-                // Debug.Log($"A: {valueA:F3}");
-            }
-        );
-
-        _server.MessageDispatcher.AddCallback(
-            "/ulipsync/vowel/i",
-            (string address, OscDataHandle data) => {
-                valueI = data.GetElementAsFloat(0);
-                // Debug.Log($"I: {valueI:F3}");
-            }
-        );
-
-        _server.MessageDispatcher.AddCallback(
-            "/ulipsync/vowel/u",
-            (string address, OscDataHandle data) => {
-                valueU = data.GetElementAsFloat(0);
-                // Debug.Log($"U: {valueU:F3}");
-            }
-        );
-
-        _server.MessageDispatcher.AddCallback(
-            "/ulipsync/vowel/e",
-            (string address, OscDataHandle data) => {
-                valueE = data.GetElementAsFloat(0);
-                // Debug.Log($"E: {valueE:F3}");
-            }
-        );
-
-        _server.MessageDispatcher.AddCallback(
-            "/ulipsync/vowel/o",
-            (string address, OscDataHandle data) => {
-                valueO = data.GetElementAsFloat(0);
-                // Debug.Log($"O: {valueO:F3}");
-            }
-        );
+        port = DefaultPort;
     }
 
-    // void OnGUI()
-    // {
-    //     // デバッグ表示
-    //     GUILayout.BeginArea(new Rect(10, 10, 200, 150));
-    //     GUILayout.BeginVertical("box");
-    //     GUILayout.Label("Received Values:");
-    //     GUILayout.Label($"A: {valueA:F3}");
-    //     GUILayout.Label($"I: {valueI:F3}");
-    //     GUILayout.Label($"U: {valueU:F3}");
-    //     GUILayout.Label($"E: {valueE:F3}");
-    //     GUILayout.Label($"O: {valueO:F3}");
-    //     GUILayout.EndVertical();
-    //     GUILayout.EndArea();
-    // }
+    void OnValidate()
+    {
+        UseDefaultPortIfLegacy();
+    }
+
+    public void UseDefaultPortIfLegacy()
+    {
+        if (port <= 0 || port == 3940 || port == 4000)
+        {
+            port = DefaultPort;
+        }
+
+        port = PerformerOscPorts.Normalize(port, DefaultPort);
+    }
+
+    void OnEnable()
+    {
+        if (_server != null)
+        {
+            return;
+        }
+
+        UseDefaultPortIfLegacy();
+
+        if (!PerformerOscServerRegistry.TryAcquire(this, port, out _server))
+        {
+            return;
+        }
+
+        _boundPort = port;
+        RegisterCallbacks(_server);
+    }
+
+    void OnDisable()
+    {
+        UnregisterCallbacks(_server);
+        PerformerOscServerRegistry.Release(_boundPort, _server);
+        _server = null;
+        _boundPort = 0;
+    }
 
     void OnDestroy()
     {
-        _server?.Dispose();
-        _server = null;
+        OnDisable();
     }
+
+    void RegisterCallbacks(OscServer server)
+    {
+        if (server == null || _callbacksRegistered)
+        {
+            return;
+        }
+
+        server.MessageDispatcher.AddCallback("/ulipsync/vowel/a", OnVowelA);
+        server.MessageDispatcher.AddCallback("/ulipsync/vowel/i", OnVowelI);
+        server.MessageDispatcher.AddCallback("/ulipsync/vowel/u", OnVowelU);
+        server.MessageDispatcher.AddCallback("/ulipsync/vowel/e", OnVowelE);
+        server.MessageDispatcher.AddCallback("/ulipsync/vowel/o", OnVowelO);
+        _callbacksRegistered = true;
+    }
+
+    void UnregisterCallbacks(OscServer server)
+    {
+        if (server == null || !_callbacksRegistered)
+        {
+            return;
+        }
+
+        server.MessageDispatcher.RemoveCallback("/ulipsync/vowel/a", OnVowelA);
+        server.MessageDispatcher.RemoveCallback("/ulipsync/vowel/i", OnVowelI);
+        server.MessageDispatcher.RemoveCallback("/ulipsync/vowel/u", OnVowelU);
+        server.MessageDispatcher.RemoveCallback("/ulipsync/vowel/e", OnVowelE);
+        server.MessageDispatcher.RemoveCallback("/ulipsync/vowel/o", OnVowelO);
+        _callbacksRegistered = false;
+    }
+
+    void OnVowelA(string address, OscDataHandle data) { valueA = data.GetElementAsFloat(0); }
+    void OnVowelI(string address, OscDataHandle data) { valueI = data.GetElementAsFloat(0); }
+    void OnVowelU(string address, OscDataHandle data) { valueU = data.GetElementAsFloat(0); }
+    void OnVowelE(string address, OscDataHandle data) { valueE = data.GetElementAsFloat(0); }
+    void OnVowelO(string address, OscDataHandle data) { valueO = data.GetElementAsFloat(0); }
 }

@@ -29,8 +29,8 @@ namespace VLiveKit.PerformerAct.Editor
         };
 
         [SerializeField] string destinationAddress = "127.0.0.1";
-        [SerializeField] int lipSyncPort = 3940;
-        [SerializeField] int expressionPort = 9000;
+        [SerializeField] int lipSyncPort = global::PerformerOscPorts.LipSync;
+        [SerializeField] int expressionPort = global::PerformerOscPorts.Expression;
         [SerializeField] bool sendLipSync = true;
         [SerializeField] bool sendExpression = true;
         [SerializeField] int rateFps = 30;
@@ -76,6 +76,7 @@ namespace VLiveKit.PerformerAct.Editor
 
         void OnEnable()
         {
+            UpgradeLegacyPorts();
             EditorApplication.update += OnEditorUpdate;
         }
 
@@ -84,6 +85,15 @@ namespace VLiveKit.PerformerAct.Editor
             EditorApplication.update -= OnEditorUpdate;
             StopSending(sendZeroOnStop);
             DisposeClients();
+        }
+
+        void UpgradeLegacyPorts()
+        {
+            if (lipSyncPort <= 0 || lipSyncPort == 3940 || lipSyncPort == 4000)
+                lipSyncPort = global::PerformerOscPorts.LipSync;
+
+            if (expressionPort <= 0 || expressionPort == 4000 || expressionPort == 9000)
+                expressionPort = global::PerformerOscPorts.Expression;
         }
 
         void OnGUI()

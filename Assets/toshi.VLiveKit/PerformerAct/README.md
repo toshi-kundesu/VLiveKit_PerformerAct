@@ -81,8 +81,8 @@ In the VLiveKit sandbox this package is placed at `Packages/VLiveKit_PerformerAc
 
 Open `toshi > VLiveKit > Performer Act > OSC Test Signal` to send local test signals without preparing uLipSync or an external controller.
 
-- Lip sync sends `/ulipsync/vowel/a`, `/i`, `/u`, `/e`, and `/o` to `FacialReceiver` on port `3940` by default.
-- Expression controls send `JoyStickReceiver` addresses such as `/b1`-`/b6`, `/p1_X`, `/p1_Y`, `/slider1`, `/slider2`, and axis values on port `9000` by default.
+- Lip sync sends `/ulipsync/vowel/a`, `/i`, `/u`, `/e`, and `/o` to `FacialReceiver` on port `39580` by default.
+- Expression controls send `JoyStickReceiver` addresses such as `/b1`-`/b6`, `/p1_X`, `/p1_Y`, `/slider1`, `/slider2`, and axis values on port `39581` by default.
 - Use `Aeiou Loop` or `Talk Pulse` while tuning mouth mappings, then switch to `Manual` for exact values.
 - Enable `Send zero values on stop` when you want the avatar face to return to rest after a test.
 
